@@ -1,0 +1,12 @@
+# dsh-klee-theme — bundle patch.
+#
+# Mounts the theme package into the profile that selects this bundle. The
+# browser half is attached to this Loader row by @deepseek-ai/dsh-client-modules,
+# because the package's package.json declares `dsh.client` and exports ./client.
+#
+# Install (the profile must be the one the running app owns):
+#   dsh plugin --profile <profile> add <path-or-spec>
+
+- insert:
+    - id: dsh-klee-theme
+      name: dsh-klee-theme

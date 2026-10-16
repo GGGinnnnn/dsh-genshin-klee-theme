@@ -1,0 +1,17 @@
+# Dependencies and package-manager state
+node_modules/
+pnpm-lock.yaml
+.npmrc
+
+# Local profile snapshots taken before installing into DSH
+.klee-theme-backup/
+
+# Logs and editor state
+*.log
+npm-debug.log*
+pnpm-debug.log*
+.idea/
+.vscode/
+*.swp
+Thumbs.db
+desktop.ini

@@ -1,0 +1,44 @@
+{
+  "name": "dsh-klee-theme",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "可莉（Klee）主题：按窗口比例切换 DSH 背景、替换「探索未至之境」图标与输入栏发送按钮图标，并把界面配色换成背景图的主色调。 · Klee theme: aspect-aware DSH backgrounds, Klee glyphs for the hero brand mark and the composer send button, and a palette taken from the artwork.",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "theme",
+    "klee",
+    "genshin"
+  ],
+  "license": "MIT",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./client/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "client",
+    "assets",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-theme"
+      ]
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  }
+}
