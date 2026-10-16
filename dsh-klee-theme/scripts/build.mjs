@@ -34,7 +34,7 @@ const ASSETS = join(PACKAGE_ROOT, 'assets')
 const PACKAGE_NAME = 'dsh-klee-theme'
 
 /** Runtime files copied into an installed profile copy. */
-const RUNTIME = ['package.json', 'cordis.patch.yml', 'README.md', 'lib', 'client', 'assets']
+const RUNTIME = ['package.json', 'cordis.patch.yml', 'README.md', 'LICENSE', 'lib', 'client', 'assets']
 
 /** Extension preference when a base name has more than one candidate. */
 const EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'avif', 'svg']

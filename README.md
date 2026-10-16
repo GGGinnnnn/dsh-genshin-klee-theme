@@ -134,6 +134,7 @@ pwsh -File "D:\study\dsh-genshin-klee-theme\dsh-klee-theme\scripts\uninstall.ps1
 
 ```
 dsh-genshin-klee-theme/
+├─ LICENSE                                                          MIT
 ├─ 背景（16;9）.jpg / 背景（4;3）.jpg / 替换探索未至之境.png / 1.png   # 原始素材
 └─ dsh-klee-theme/                  # 插件包
    ├─ package.json                  # dsh.client（浏览器端声明）+ dsh.bundle（bundle 补丁）
@@ -148,3 +149,8 @@ dsh-genshin-klee-theme/
       ├─ verify-runtime.cjs         # 假 DOM 真跑产物，断言样式与图标行为
       └─ uninstall.ps1              # 还原配置、移除插件
 ```
+
+## 许可证
+
+MIT，见 [LICENSE](LICENSE)。仓库根目录与插件包内各有一份相同文本：
+根目录那份是仓库的许可证，插件包内那份随包发布（写在 `files` 里），使插件被单独安装时同样携带许可证。

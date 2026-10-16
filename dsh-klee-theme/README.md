@@ -98,7 +98,8 @@ swaps, the palette layer and the registered theme.
 package.json          dsh.client + dsh.bundle declarations
 cordis.patch.yml      mounts the row into the profile tree
 lib/index.js          empty Host half
-client/client.js      built bundle (artwork inlined, ~340 KB)
+client/client.js      built bundle (artwork inlined, ~389 KB)
 assets/               the artworks, discovered by base name
 scripts/              template, build, install verifier, runtime verifier, uninstall
+LICENSE               MIT
 ```
