@@ -150,16 +150,25 @@ function alphaOf(value) {
 }
 
 const lightTokens = ctx.theme.overrides[0]?.tokens ?? {}
-const SURFACE_TOKENS = [
-  '--dsw-alias-bg-base',
+
+/** Panes that are *meant* to be translucent glass — the artwork must show through. */
+const GLASS_TOKENS = ['--dsw-alias-bg-base', '--dsw-specific-sidebar-fill']
+/** Surfaces that carry small text or float above content — these must stay solid. */
+const SOLID_TOKENS = [
   '--dsw-alias-bg-layer-1',
   '--dsw-alias-bg-layer-2',
-  '--dsw-specific-sidebar-fill',
+  '--dsw-alias-bg-layer-3',
+  '--dsw-alias-bg-overlay',
+  '--dsw-specific-menu',
   '--dsw-specific-input-major',
   '--dsw-specific-bubble',
 ]
-const thinSurfaces = SURFACE_TOKENS.filter((name) => alphaOf(lightTokens[name]?.light) < 0.85)
-const darkThinSurfaces = SURFACE_TOKENS.filter((name) => alphaOf(lightTokens[name]?.dark) < 0.85)
+const thinSolids = SOLID_TOKENS.filter((name) => alphaOf(lightTokens[name]?.light) < 0.85)
+const darkThinSolids = SOLID_TOKENS.filter((name) => alphaOf(lightTokens[name]?.dark) < 0.85)
+/** Panes must stay see-through enough for the artwork to read as a background. */
+const lightPaneAlpha = alphaOf(lightTokens['--dsw-alias-bg-base']?.light)
+const lightSidebarAlpha = alphaOf(lightTokens['--dsw-specific-sidebar-fill']?.light)
+const darkPaneAlpha = alphaOf(lightTokens['--dsw-alias-bg-base']?.dark)
 
 /**
  * WCAG contrast of a text token over a composed surface: the surface at its own
@@ -221,17 +230,19 @@ const checks = [
   ['backdrop carries the 16:9 artwork', themeCss.includes('data:image/jpeg;base64,') && jpegUris.length === 2],
   ['narrow-window media query swaps the artwork', themeCss.includes('max-aspect-ratio: 13/10')],
 
-  // Readability contract: the reading column keeps a solid surface, the artwork
-  // is softened, and no surface token is thin enough to let the picture through.
-  ['reading column keeps a solid surface', /\.BynINW_centerCol[\s\S]{0,120}background:\s*var\(--dsw-alias-bg-base\)/.test(themeCss)],
-  ['reading column is never cleared', !/\.BynINW_centerCol[^{]*\{[^}]*background:\s*transparent/.test(themeCss)],
-  ['shell frame is still cleared for the artwork', /\.BynINW_frame[^{]*\{[^}]*background:\s*transparent/.test(themeCss)],
-  ['artwork is blurred', /#dsh-klee-theme-backdrop\s*\{[^}]*filter:\s*var\(--dsh-klee-artwork-blur/.test(themeCss)],
-  ['artwork is veiled', /#dsh-klee-theme-backdrop::after\s*\{[^}]*rgba\(255,\s*244,\s*234/.test(themeCss)],
-  ['light surfaces are opaque enough to read on', thinSurfaces.length === 0],
-  ['dark surfaces are opaque enough to read on', darkThinSurfaces.length === 0],
-  ['light text clears WCAG AA over the artwork', weakLightText.length === 0],
-  ['dark text clears WCAG AA over the artwork', weakDarkText.length === 0],
+  // Visibility + readability contract: no dependency on generated layout class
+  // names, the artwork layer is softened, panes stay see-through, and text still
+  // clears AA against the composed glass.
+  ['no dependency on host layout class hashes', !/(BynINW_|_centerCol|_sidebarCol|_frame\b)/.test(themeCss)],
+  ['artwork layer is wired to the blur knob', /#dsh-klee-theme-backdrop\s*\{[^}]*filter:\s*var\(--dsh-klee-artwork-blur/.test(themeCss)],
+  ['artwork keeps only a light veil', /#dsh-klee-theme-backdrop::after\s*\{[^}]*rgba\(255,\s*246,\s*238/.test(themeCss)],
+  ['light pane alpha keeps the artwork visible', lightPaneAlpha > 0 && lightPaneAlpha <= 0.62],
+  ['light sidebar alpha keeps the artwork visible', lightSidebarAlpha > 0 && lightSidebarAlpha <= 0.62],
+  ['dark pane alpha keeps the artwork visible', darkPaneAlpha > 0 && darkPaneAlpha <= 0.85],
+  ['light solid surfaces stay opaque', thinSolids.length === 0],
+  ['dark solid surfaces stay opaque', darkThinSolids.length === 0],
+  ['light text clears WCAG AA over the glass', weakLightText.length === 0],
+  ['dark text clears WCAG AA over the glass', weakDarkText.length === 0],
 
   // Hero brand mark: one mark, painted in CSS, host glyph hidden.
   ['hero mark: host svg is hidden', iconsCss.includes('> svg[aria-hidden="true"]') && iconsCss.includes('display: none !important')],

@@ -7,25 +7,38 @@ a replaced hero brand mark, and a palette sampled from the artwork itself.
 
 | Surface | Implementation |
 | --- | --- |
-| Background | A fixed `#dsh-klee-theme-backdrop` layer behind the shell. The 16:9 artwork by default, the 4:3 one under `@media (max-aspect-ratio: 13/10)`, both `background-size: cover`, blurred and veiled so it never competes with text. |
-| Shell layering | The frame is cleared so the artwork shows at the frame edges and behind the sidebar; the **reading column keeps a solid `var(--dsw-alias-bg-base)` surface**, so copy is never painted directly on the picture. |
+| Background | A fixed `#dsh-klee-theme-backdrop` layer behind the shell. The 16:9 artwork by default, the 4:3 one under `@media (max-aspect-ratio: 13/10)`, both `background-size: cover`, softened with `blur(6px)` and a light warm veil. |
+| Visibility | No host layout classes are touched. The picture rides on the palette's own alpha: the host paints `--dsw-alias-bg-base` (0.55) and `--dsw-specific-sidebar-fill` (0.52) over the layer, so ~45% of the artwork shows through everywhere. |
 | Hero brand mark | The headline glyph — an inline `<svg aria-hidden="true">` inside an inline-flex `<span>` — is hidden and the artwork painted on that span. |
 | Composer send button | The round primary button whose `aria-label` is the send action: its arrow svg is hidden and the artwork painted inside the button. |
-| Palette | `ctx.theme.overrideTokens()` stacks a light **and** dark alias-token layer over the active theme; `ctx.theme.register()` additionally makes `dsh-klee-theme` a selectable Appearance theme. Surface alpha stays ≥ 0.88 so translucency never costs contrast. |
+| Palette | `ctx.theme.overrideTokens()` stacks a light **and** dark alias-token layer over the active theme; `ctx.theme.register()` additionally makes `dsh-klee-theme` a selectable Appearance theme. |
 
-## Readability contract
+## Visibility × readability contract
 
-Text is never painted directly on the artwork. That is enforced in two places and
-asserted by `scripts/verify-runtime.cjs`:
+Three failed revisions shaped this design, and the third is the interesting one:
 
-1. **Layering** — `.BynINW_centerCol` gets `background: var(--dsw-alias-bg-base)`
-   and is never cleared. Only the frame is transparent.
-2. **Surface alpha** — every surface token in both palettes is ≥ 0.88, so panels
-   that *are* translucent keep a stable ground.
+1. clearing the reading column put text straight on the artwork (unreadable);
+2. raising surface alpha to 0.90 made the artwork disappear;
+3. clearing the frame and frosting panes by class name worked — until DSH renamed
+   its CSS-module hashes (`BynINW_*` → `mP3x-q_*`), and every rule silently stopped
+   matching.
 
-The artwork is additionally `blur(3px)`ed, scaled 1.03 and veiled, which is what
-makes the remaining translucency look deliberate instead of noisy. Knobs:
-`--dsh-klee-backdrop-strength` (0–1) and `--dsh-klee-artwork-blur`.
+So the theme now touches **no host layout class at all**. Visibility comes from
+the palette's alpha (panes 0.55/0.52 light, 0.74/0.70 dark), the artwork is
+softened on its own layer, and readability is verified numerically. Asserted by
+`scripts/verify-runtime.cjs`:
+
+1. **No generated class names** — the stylesheet is checked for `BynINW_`,
+   `_centerCol`, `_sidebarCol`, so a host rename can never silently gut the theme.
+2. **Panels stay see-through** — light pane alpha must stay ≤ 0.62, dark ≤ 0.85.
+3. **Solid where it matters** — cards, menus, popovers, composer and bubbles stay
+   ≥ 0.85, so small text never depends on the artwork's tone.
+4. **Contrast is computed, not eyeballed** — each text tier is composited over
+   the worst-case artwork pixel behind the pane and must clear ≥ 4.5:1 (WCAG AA)
+   in both schemes.
+
+Knobs: `--dsh-klee-backdrop-strength` (0–1) and `--dsh-klee-artwork-blur`
+(`blur(6px) saturate(0.98)` by default, `none` for a crisp picture).
 
 ## Why both icon swaps are pure CSS
 

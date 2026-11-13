@@ -75,38 +75,47 @@ window.__ModuleLoader__.load({
      * The artwork's own palette, averaged off the warm coral washes of
      * 背景（16;9）.jpg and 背景（4;3）.jpg.
      *
-     * Surface alpha is the readability lever, and it is deliberately high: the
-     * backdrop is a busy illustration, so a translucent surface lets coral
-     * shapes and cream characters sit directly under dark-brown text and the
-     * contrast collapses. Above ~0.88 the artwork still tints the surface while
-     * text keeps a stable ground. The backdrop itself is blurred and veiled
-     * (see THEME_STYLE) so the small alpha that remains never reads as noise.
+     * Visibility comes from this alpha and nothing else — the theme deliberately
+     * does not touch host layout classes, because those are CSS-module hashes
+     * that change with every DSH build (`BynINW_*` in one, `mP3x-q_*` in the
+     * next) and the rules would silently stop matching. The host paints these
+     * tokens on its own panes, so the artwork layer behind them shows through by
+     * exactly (1 − alpha):
+     *
+     *  - the two big panes sit at 0.55 / 0.52 (light) and 0.74 / 0.70 (dark), so
+     *    roughly 45% / 28% of the picture is visible;
+     *  - every surface that carries small text or floats above content (cards,
+     *    menus, popovers, composer, bubbles) stays at 0.85+.
+     *
+     * The text tiers are darker than a plain cream theme would need, because they
+     * must clear WCAG AA against artwork-composited panes rather than flat cream.
+     * Those numbers live in the project README and are asserted in
+     * scripts/verify-runtime.cjs.
      */
     const KLEE_TOKENS = {
-      // Surfaces — warm cream, near-opaque so text always has a quiet ground.
-      '--dsw-alias-bg-base': 'rgba(253, 244, 236, 0.90)',
-      '--dsw-alias-bg-layer-1': 'rgba(255, 249, 243, 0.95)',
-      '--dsw-alias-bg-layer-2': 'rgba(250, 232, 216, 0.94)',
-      '--dsw-alias-bg-layer-3': 'rgba(255, 251, 246, 0.96)',
-      '--dsw-alias-bg-overlay': 'rgba(255, 250, 244, 0.97)',
-      '--dsw-specific-sidebar-fill': 'rgba(250, 233, 217, 0.88)',
-      '--dsw-specific-menu': 'rgba(255, 250, 244, 0.97)',
-      '--dsw-specific-input-major': 'rgba(255, 250, 244, 0.96)',
-      '--dsw-specific-bubble': 'rgba(255, 224, 200, 0.96)',
-      '--dsw-specific-selector': 'rgba(255, 246, 237, 0.96)',
+      // The two big panes: translucent so the artwork reads as a background.
+      '--dsw-alias-bg-base': 'rgba(253, 244, 236, 0.55)',
+      '--dsw-specific-sidebar-fill': 'rgba(250, 233, 217, 0.52)',
+      // Everything that carries small text or sits above content stays solid.
+      '--dsw-alias-bg-layer-1': 'rgba(255, 249, 243, 0.94)',
+      '--dsw-alias-bg-layer-2': 'rgba(250, 232, 216, 0.93)',
+      '--dsw-alias-bg-layer-3': 'rgba(255, 251, 246, 0.95)',
+      '--dsw-alias-bg-overlay': 'rgba(255, 250, 244, 0.96)',
+      '--dsw-specific-menu': 'rgba(255, 250, 244, 0.92)',
+      '--dsw-specific-input-major': 'rgba(255, 250, 244, 0.92)',
+      '--dsw-specific-bubble': 'rgba(255, 224, 200, 0.95)',
+      '--dsw-specific-selector': 'rgba(255, 246, 237, 0.95)',
 
-      // Text and icons — deep warm brown, so the copy stays readable on coral.
-      // The muted tiers are tuned to clear WCAG AA (4.5:1) against the composed
-      // surfaces, not just against flat cream: see the contrast numbers in the
-      // project README.
-      '--dsw-alias-label-primary': '#4a2a20',
-      '--dsw-alias-label-secondary': '#6f4132',
-      '--dsw-alias-label-tertiary': '#81503e',
-      '--dsw-alias-label-caption': '#7f4f3d',
-      '--dsw-alias-label-primary-dimmed': '#5c3527',
+      // Text and icons — deep warm brown. The muted tiers are dark enough to
+      // clear WCAG AA against glass that still carries the artwork.
+      '--dsw-alias-label-primary': '#2e1a13',
+      '--dsw-alias-label-secondary': '#48261b',
+      '--dsw-alias-label-tertiary': '#52301f',
+      '--dsw-alias-label-caption': '#52301f',
+      '--dsw-alias-label-primary-dimmed': '#3a2419',
       '--dsw-alias-label-primary-inverted': '#fff7f1',
-      '--dsw-alias-label-quaternary': '#a97f6a',
-      '--dsw-alias-label-dimmed': '#9d7763',
+      '--dsw-alias-label-quaternary': '#8a6453',
+      '--dsw-alias-label-dimmed': '#7d5a49',
 
       // Borders.
       '--dsw-alias-border-l1': 'rgba(122, 63, 41, 0.20)',
@@ -151,26 +160,30 @@ window.__ModuleLoader__.load({
     /**
      * The dark counterpart: the same warm keys, pushed down into a warm brown so
      * a user whose shell is in dark mode still gets a coherent Klee palette
-     * instead of a washed-out light one. Same alpha rule as the light set —
-     * near-opaque surfaces, because the backdrop is busy.
+     * instead of a washed-out light one.
+     *
+     * The glass alpha is higher than the light set on purpose: the artwork
+     * behind it is a bright coral, so a thin dark veil would leave light text on
+     * a mid-tone. 0.74 keeps the picture clearly visible while light text still
+     * clears AA over it.
      */
     const KLEE_TOKENS_DARK = {
-      '--dsw-alias-bg-base': 'rgba(30, 19, 16, 0.90)',
-      '--dsw-alias-bg-layer-1': 'rgba(44, 27, 22, 0.94)',
-      '--dsw-alias-bg-layer-2': 'rgba(56, 34, 27, 0.94)',
-      '--dsw-alias-bg-layer-3': 'rgba(66, 40, 32, 0.96)',
-      '--dsw-alias-bg-overlay': 'rgba(38, 23, 19, 0.97)',
-      '--dsw-specific-sidebar-fill': 'rgba(38, 23, 19, 0.90)',
-      '--dsw-specific-menu': 'rgba(44, 27, 22, 0.97)',
-      '--dsw-specific-input-major': 'rgba(50, 30, 25, 0.96)',
-      '--dsw-specific-bubble': 'rgba(120, 57, 40, 0.95)',
-      '--dsw-specific-selector': 'rgba(52, 32, 26, 0.96)',
+      '--dsw-alias-bg-base': 'rgba(30, 19, 16, 0.74)',
+      '--dsw-specific-sidebar-fill': 'rgba(38, 23, 19, 0.70)',
+      '--dsw-alias-bg-layer-1': 'rgba(44, 27, 22, 0.92)',
+      '--dsw-alias-bg-layer-2': 'rgba(56, 34, 27, 0.92)',
+      '--dsw-alias-bg-layer-3': 'rgba(66, 40, 32, 0.94)',
+      '--dsw-alias-bg-overlay': 'rgba(38, 23, 19, 0.96)',
+      '--dsw-specific-menu': 'rgba(44, 27, 22, 0.93)',
+      '--dsw-specific-input-major': 'rgba(50, 30, 25, 0.92)',
+      '--dsw-specific-bubble': 'rgba(120, 57, 40, 0.94)',
+      '--dsw-specific-selector': 'rgba(52, 32, 26, 0.95)',
 
-      '--dsw-alias-label-primary': '#f6e3d8',
-      '--dsw-alias-label-secondary': '#dcbfb0',
-      '--dsw-alias-label-tertiary': '#bb9787',
-      '--dsw-alias-label-caption': '#a58274',
-      '--dsw-alias-label-primary-dimmed': '#e9cfc1',
+      '--dsw-alias-label-primary': '#fbf0e8',
+      '--dsw-alias-label-secondary': '#f0ddd0',
+      '--dsw-alias-label-tertiary': '#e4cfc1',
+      '--dsw-alias-label-caption': '#e4cfc1',
+      '--dsw-alias-label-primary-dimmed': '#f2e2d7',
       '--dsw-alias-label-primary-inverted': '#231410',
       '--dsw-alias-label-quaternary': '#8d6e62',
       '--dsw-alias-label-dimmed': '#9c7b6d',
@@ -283,37 +296,28 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * Backdrop layer and the shell's transparent window.
+     * Backdrop layer only — deliberately no host layout classes.
      *
-     * Layering, outermost first: the artwork layer sits behind everything; the
-     * frame is cleared so the artwork shows at the frame edges and behind the
-     * sidebar; the reading column keeps a solid surface. That last point is the
-     * whole readability contract — **text never sits directly on the artwork**.
-     * An earlier revision cleared the column too, which is why body text became
-     * hard to read no matter how the palette was tuned.
+     * An earlier revision cleared the shell frame and frosted the reading
+     * column by class name. Those classes are CSS-module hashes that change with
+     * every DSH build (`BynINW_*` in one, `mP3x-q_*` in the next), so the rules
+     * silently stopped matching and the theme's own layering disappeared with
+     * them. The artwork now rides entirely on the palette's alpha: the host
+     * paints `--dsw-alias-bg-base` (55%) and `--dsw-specific-sidebar-fill` (52%)
+     * over this layer, so roughly 45% of the picture shows through everywhere,
+     * with no reliance on any generated class name.
      *
-     * The artwork is blurred, slightly enlarged and veiled for the surfaces that
-     * are still translucent (the sidebar): busy outlines stop competing with
-     * small text, and the scale hides the soft edge blur leaves at the viewport
-     * border. `--dsh-klee-backdrop-strength` (0–1) fades the layer;
-     * `--dsh-klee-artwork-blur` overrides the blur (0 = sharp artwork).
+     * The picture is softened (`blur(6px)`) and slightly enlarged so its texture
+     * never competes with glyphs and no blurred edge shows at the viewport rim.
+     * `--dsh-klee-artwork-blur` tunes that (e.g. `none` for a crisp picture at
+     * the cost of some legibility), and `--dsh-klee-backdrop-strength` (0–1)
+     * fades the layer itself.
      */
     const THEME_STYLE = `
 :root,
 body {
   --dsh-klee-backdrop-strength: 1;
-  --dsh-klee-artwork-blur: blur(3px) saturate(0.94);
-}
-/* The reading column is opaque: this is what keeps copy legible. */
-.BynINW_centerCol,
-[data-windows-titlebar] .BynINW_centerCol {
-  background: var(--dsw-alias-bg-base);
-}
-/* The frame stays clear so the artwork shows through the sidebar's own
-   translucent fill and at the frame edges. */
-html[data-windows-titlebar] .BynINW_frame,
-.BynINW_frame {
-  background: transparent;
+  --dsh-klee-artwork-blur: blur(6px) saturate(0.98);
 }
 #${BACKDROP_ID} {
   position: fixed;
@@ -325,8 +329,8 @@ html[data-windows-titlebar] .BynINW_frame,
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  filter: var(--dsh-klee-artwork-blur, blur(3px) saturate(0.94));
-  transform: scale(1.03);
+  filter: var(--dsh-klee-artwork-blur, blur(6px) saturate(0.98));
+  transform: scale(1.04);
   transition: opacity 200ms ease;
 }
 /* Narrower than 13:10 switches to the 4:3 artwork, so the character is not
@@ -336,15 +340,15 @@ html[data-windows-titlebar] .BynINW_frame,
     background-image: url("${ASSETS.bgPortrait}");
   }
 }
-/* The warm veil: flattens the artwork's hottest highlights so the surfaces that
-   are still translucent keep dark text readable. */
+/* A light warm veil: just enough to lift the hottest highlights, not enough to
+   flatten the picture the theme exists for. */
 #${BACKDROP_ID}::after {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(120% 90% at 50% 0%, rgba(255, 244, 234, 0.46) 0%, rgba(255, 244, 234, 0.12) 62%),
-    linear-gradient(180deg, rgba(255, 246, 238, 0.30) 0%, rgba(255, 246, 238, 0.58) 100%);
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 246, 238, 0.18) 0%, rgba(255, 246, 238, 0) 62%),
+    linear-gradient(180deg, rgba(255, 246, 238, 0.10) 0%, rgba(255, 246, 238, 0.22) 100%);
 }
 @media (prefers-reduced-motion: reduce) {
   #${BACKDROP_ID} { transition: none; }
