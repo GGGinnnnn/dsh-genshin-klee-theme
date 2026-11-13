@@ -94,8 +94,11 @@ window.__ModuleLoader__.load({
      */
     const KLEE_TOKENS = {
       // The two big panes: translucent so the artwork reads as a background.
-      '--dsw-alias-bg-base': 'rgba(253, 244, 236, 0.55)',
-      '--dsw-specific-sidebar-fill': 'rgba(250, 233, 217, 0.52)',
+      // The host may stack two of these (frame + column), which multiplies to
+      // ~0.73 — still ~27% of the picture visible in the reading area, and 54%
+      // wherever only one layer paints.
+      '--dsw-alias-bg-base': 'rgba(253, 244, 236, 0.48)',
+      '--dsw-specific-sidebar-fill': 'rgba(250, 233, 217, 0.46)',
       // Everything that carries small text or sits above content stays solid.
       '--dsw-alias-bg-layer-1': 'rgba(255, 249, 243, 0.94)',
       '--dsw-alias-bg-layer-2': 'rgba(250, 232, 216, 0.93)',
@@ -106,13 +109,14 @@ window.__ModuleLoader__.load({
       '--dsw-specific-bubble': 'rgba(255, 224, 200, 0.95)',
       '--dsw-specific-selector': 'rgba(255, 246, 237, 0.95)',
 
-      // Text and icons — deep warm brown. The muted tiers are dark enough to
-      // clear WCAG AA against glass that still carries the artwork.
-      '--dsw-alias-label-primary': '#2e1a13',
-      '--dsw-alias-label-secondary': '#48261b',
-      '--dsw-alias-label-tertiary': '#52301f',
-      '--dsw-alias-label-caption': '#52301f',
-      '--dsw-alias-label-primary-dimmed': '#3a2419',
+      // Text and icons — deep warm brown. The muted tiers are darker than a
+      // plain cream theme needs, because they must clear WCAG AA against panes
+      // that still carry the artwork.
+      '--dsw-alias-label-primary': '#241309',
+      '--dsw-alias-label-secondary': '#3a1d12',
+      '--dsw-alias-label-tertiary': '#442417',
+      '--dsw-alias-label-caption': '#442417',
+      '--dsw-alias-label-primary-dimmed': '#33200f',
       '--dsw-alias-label-primary-inverted': '#fff7f1',
       '--dsw-alias-label-quaternary': '#8a6453',
       '--dsw-alias-label-dimmed': '#7d5a49',
@@ -164,12 +168,12 @@ window.__ModuleLoader__.load({
      *
      * The glass alpha is higher than the light set on purpose: the artwork
      * behind it is a bright coral, so a thin dark veil would leave light text on
-     * a mid-tone. 0.74 keeps the picture clearly visible while light text still
-     * clears AA over it.
+     * a mid-tone. 0.66 keeps the picture readable as a background while light
+     * text still clears AA over it.
      */
     const KLEE_TOKENS_DARK = {
-      '--dsw-alias-bg-base': 'rgba(30, 19, 16, 0.74)',
-      '--dsw-specific-sidebar-fill': 'rgba(38, 23, 19, 0.70)',
+      '--dsw-alias-bg-base': 'rgba(30, 19, 16, 0.66)',
+      '--dsw-specific-sidebar-fill': 'rgba(38, 23, 19, 0.62)',
       '--dsw-alias-bg-layer-1': 'rgba(44, 27, 22, 0.92)',
       '--dsw-alias-bg-layer-2': 'rgba(56, 34, 27, 0.92)',
       '--dsw-alias-bg-layer-3': 'rgba(66, 40, 32, 0.94)',
@@ -179,11 +183,11 @@ window.__ModuleLoader__.load({
       '--dsw-specific-bubble': 'rgba(120, 57, 40, 0.94)',
       '--dsw-specific-selector': 'rgba(52, 32, 26, 0.95)',
 
-      '--dsw-alias-label-primary': '#fbf0e8',
-      '--dsw-alias-label-secondary': '#f0ddd0',
-      '--dsw-alias-label-tertiary': '#e4cfc1',
-      '--dsw-alias-label-caption': '#e4cfc1',
-      '--dsw-alias-label-primary-dimmed': '#f2e2d7',
+      '--dsw-alias-label-primary': '#fff7f2',
+      '--dsw-alias-label-secondary': '#f9ece4',
+      '--dsw-alias-label-tertiary': '#f2e0d4',
+      '--dsw-alias-label-caption': '#f2e0d4',
+      '--dsw-alias-label-primary-dimmed': '#fdf1ea',
       '--dsw-alias-label-primary-inverted': '#231410',
       '--dsw-alias-label-quaternary': '#8d6e62',
       '--dsw-alias-label-dimmed': '#9c7b6d',
@@ -317,7 +321,7 @@ window.__ModuleLoader__.load({
 :root,
 body {
   --dsh-klee-backdrop-strength: 1;
-  --dsh-klee-artwork-blur: blur(6px) saturate(0.98);
+  --dsh-klee-artwork-blur: blur(6px) saturate(1.15) contrast(1.04);
 }
 #${BACKDROP_ID} {
   position: fixed;
@@ -329,7 +333,7 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  filter: var(--dsh-klee-artwork-blur, blur(6px) saturate(0.98));
+  filter: var(--dsh-klee-artwork-blur, blur(6px) saturate(1.15) contrast(1.04));
   transform: scale(1.04);
   transition: opacity 200ms ease;
 }
