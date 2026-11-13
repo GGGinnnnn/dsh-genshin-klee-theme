@@ -96,10 +96,13 @@ window.__ModuleLoader__.load({
       '--dsw-specific-selector': 'rgba(255, 246, 237, 0.96)',
 
       // Text and icons — deep warm brown, so the copy stays readable on coral.
+      // The muted tiers are tuned to clear WCAG AA (4.5:1) against the composed
+      // surfaces, not just against flat cream: see the contrast numbers in the
+      // project README.
       '--dsw-alias-label-primary': '#4a2a20',
       '--dsw-alias-label-secondary': '#6f4132',
-      '--dsw-alias-label-tertiary': '#8b5b48',
-      '--dsw-alias-label-caption': '#96654f',
+      '--dsw-alias-label-tertiary': '#81503e',
+      '--dsw-alias-label-caption': '#7f4f3d',
       '--dsw-alias-label-primary-dimmed': '#5c3527',
       '--dsw-alias-label-primary-inverted': '#fff7f1',
       '--dsw-alias-label-quaternary': '#a97f6a',

@@ -161,6 +161,55 @@ const SURFACE_TOKENS = [
 const thinSurfaces = SURFACE_TOKENS.filter((name) => alphaOf(lightTokens[name]?.light) < 0.85)
 const darkThinSurfaces = SURFACE_TOKENS.filter((name) => alphaOf(lightTokens[name]?.dark) < 0.85)
 
+/**
+ * WCAG contrast of a text token over a composed surface: the surface at its own
+ * alpha over a worst-case artwork pixel. This is the readable-on-artwork check —
+ * the flat-cream number alone would hide exactly the bug this guards.
+ * @returns {number} the contrast ratio.
+ */
+const ARTWORK_WORST_PIXELS = [[255, 245, 235], [240, 170, 125], [165, 60, 45], [120, 45, 35]]
+function channelLuminance(value) {
+  const c = value / 255
+  return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+}
+function luminance(rgb) {
+  return 0.2126 * channelLuminance(rgb[0]) + 0.7152 * channelLuminance(rgb[1]) + 0.0722 * channelLuminance(rgb[2])
+}
+function contrast(a, b) {
+  const la = luminance(a)
+  const lb = luminance(b)
+  const [hi, lo] = la > lb ? [la, lb] : [lb, la]
+  return (hi + 0.05) / (lo + 0.05)
+}
+function hexToRgb(hex) {
+  const m = /^#([0-9a-f]{6})$/i.exec(String(hex).trim())
+  if (m === null) return null
+  return [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16))
+}
+function rgbaToRgb(value) {
+  const m = /rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/.exec(String(value))
+  return m === null ? null : [Number(m[1]), Number(m[2]), Number(m[3])]
+}
+function worstContrast(textToken, surfaceToken, mode) {
+  const text = hexToRgb(lightTokens[textToken]?.[mode])
+  const surface = rgbaToRgb(lightTokens[surfaceToken]?.[mode])
+  const alpha = alphaOf(lightTokens[surfaceToken]?.[mode])
+  if (text === null || surface === null) return 0
+  let worst = Infinity
+  for (const pixel of ARTWORK_WORST_PIXELS) {
+    const composed = surface.map((c, i) => alpha * c + (1 - alpha) * pixel[i])
+    worst = Math.min(worst, contrast(text, composed))
+  }
+  return worst
+}
+const TEXT_OVER_COLUMN = ['--dsw-alias-label-primary', '--dsw-alias-label-secondary', '--dsw-alias-label-tertiary']
+const weakLightText = TEXT_OVER_COLUMN
+  .map((token) => [token, worstContrast(token, '--dsw-alias-bg-base', 'light')])
+  .filter(([, ratio]) => ratio < 4.5)
+const weakDarkText = TEXT_OVER_COLUMN
+  .map((token) => [token, worstContrast(token, '--dsw-alias-bg-base', 'dark')])
+  .filter(([, ratio]) => ratio < 4.5)
+
 const checks = [
   ['factory id is the package name', loadCall.id === 'dsh-klee-theme'],
   ['module declares inject', Array.isArray(plugin.inject) && plugin.inject.includes('theme')],
@@ -181,6 +230,8 @@ const checks = [
   ['artwork is veiled', /#dsh-klee-theme-backdrop::after\s*\{[^}]*rgba\(255,\s*244,\s*234/.test(themeCss)],
   ['light surfaces are opaque enough to read on', thinSurfaces.length === 0],
   ['dark surfaces are opaque enough to read on', darkThinSurfaces.length === 0],
+  ['light text clears WCAG AA over the artwork', weakLightText.length === 0],
+  ['dark text clears WCAG AA over the artwork', weakDarkText.length === 0],
 
   // Hero brand mark: one mark, painted in CSS, host glyph hidden.
   ['hero mark: host svg is hidden', iconsCss.includes('> svg[aria-hidden="true"]') && iconsCss.includes('display: none !important')],
