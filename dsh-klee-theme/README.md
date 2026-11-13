@@ -7,11 +7,25 @@ a replaced hero brand mark, and a palette sampled from the artwork itself.
 
 | Surface | Implementation |
 | --- | --- |
-| Background | A fixed `#dsh-klee-theme-backdrop` layer behind the shell. The 16:9 artwork by default, the 4:3 one under `@media (max-aspect-ratio: 13/10)`, both `background-size: cover`. |
-| Shell transparency | The app's own surfaces (`--dsw-alias-bg-base` on `.BynINW_frame`, `--dsw-specific-sidebar-fill` on the sidebar column) are switched to transparent, so the layer shows through the translucent panels. |
+| Background | A fixed `#dsh-klee-theme-backdrop` layer behind the shell. The 16:9 artwork by default, the 4:3 one under `@media (max-aspect-ratio: 13/10)`, both `background-size: cover`, blurred and veiled so it never competes with text. |
+| Shell layering | The frame is cleared so the artwork shows at the frame edges and behind the sidebar; the **reading column keeps a solid `var(--dsw-alias-bg-base)` surface**, so copy is never painted directly on the picture. |
 | Hero brand mark | The headline glyph — an inline `<svg aria-hidden="true">` inside an inline-flex `<span>` — is hidden and the artwork painted on that span. |
 | Composer send button | The round primary button whose `aria-label` is the send action: its arrow svg is hidden and the artwork painted inside the button. |
-| Palette | `ctx.theme.overrideTokens()` stacks a light **and** dark alias-token layer over the active theme; `ctx.theme.register()` additionally makes `dsh-klee-theme` a selectable Appearance theme. |
+| Palette | `ctx.theme.overrideTokens()` stacks a light **and** dark alias-token layer over the active theme; `ctx.theme.register()` additionally makes `dsh-klee-theme` a selectable Appearance theme. Surface alpha stays ≥ 0.88 so translucency never costs contrast. |
+
+## Readability contract
+
+Text is never painted directly on the artwork. That is enforced in two places and
+asserted by `scripts/verify-runtime.cjs`:
+
+1. **Layering** — `.BynINW_centerCol` gets `background: var(--dsw-alias-bg-base)`
+   and is never cleared. Only the frame is transparent.
+2. **Surface alpha** — every surface token in both palettes is ≥ 0.88, so panels
+   that *are* translucent keep a stable ground.
+
+The artwork is additionally `blur(3px)`ed, scaled 1.03 and veiled, which is what
+makes the remaining translucency look deliberate instead of noisy. Knobs:
+`--dsh-klee-backdrop-strength` (0–1) and `--dsh-klee-artwork-blur`.
 
 ## Why both icon swaps are pure CSS
 

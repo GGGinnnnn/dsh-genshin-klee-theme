@@ -35,6 +35,22 @@
 外壳自身的底色（`--dsw-alias-bg-base`、`--dsw-specific-sidebar-fill`）被改成透明或半透明，
 配色调色板本身就带透明度，所以背景既能透出来、文字又仍然清楚。
 
+**1b. 可读性：文字绝不直接压在背景图上**
+早期版本为了让背景更明显，把**阅读栏也一起清成透明**了，结果正文直接压在图上的珊瑚色块和米色角色上，
+深棕文字和它们叠在一起，怎么看都糊。现在按层处理：
+
+| 层 | 处理 |
+| --- | --- |
+| 背景图层 | 垫在最底下，做了 `blur(3px)` + 轻微放大（`scale(1.03)`，遮掉模糊边缘），再叠一层暖色薄纱压低高光对比 |
+| 外框（frame） | 保持透明，所以背景能在框边和侧边栏处透出来 |
+| 阅读栏（center column） | **不透明**，明确用 `var(--dsw-alias-bg-base)` 上色——这条才是可读性契约 |
+
+另外配色里的表面色 alpha 全部提到 0.88 以上（`bg-base` 0.34 → 0.90），
+所以即使侧边栏这类半透明面板也仍然有稳定的底色。两个可调项：
+
+- `--dsh-klee-backdrop-strength`：0 = 完全不要背景图，1 = 默认
+- `--dsh-klee-artwork-blur`：默认 `blur(3px) saturate(0.94)`，设成 `none` 就是清晰原图
+
 **2. 图标替换：「探索未至之境」旁边的图标 —— 现在改用确定性的 CSS 方案**
 「探索未至之境」旁边的图标，宿主是画成 `inline-flex` 的 `<span>` 里的一个
 `<svg aria-hidden="true">`（鲶鱼／鲸鱼标）。插件现在**不再依赖 slot 注册**，而是直接：
@@ -122,6 +138,8 @@ pwsh -File "D:\study\dsh-genshin-klee-theme\dsh-klee-theme\scripts\uninstall.ps1
 | 想改什么 | 怎么改 |
 | --- | --- |
 | 背景浓度 | 给 `<body>` 设 `--dsh-klee-backdrop-strength`（0 = 只保留配色不要背景图，1 = 默认） |
+| 背景清晰度 | 给 `<body>` 设 `--dsh-klee-artwork-blur`（默认 `blur(3px) saturate(0.94)`，`none` = 原图清晰） |
+| 文字更清楚 | 提高模板里 `KLEE_TOKENS` 表面色的 alpha（当前 0.88–0.97），或把阅读栏底色改成纯色 |
 | 换背景图 | 替换 `dsh-klee-theme/assets/bg-16x9.*` / `bg-4x3.*` 后重新构建并 `--sync` |
 | 换英雄图标 | 替换 `dsh-klee-theme/assets/hero-mark.*` 后重新构建并 `--sync`（删掉同名旧文件） |
 | 换发送按钮图标 | 替换 `dsh-klee-theme/assets/send-icon.*` 后重新构建并 `--sync` |

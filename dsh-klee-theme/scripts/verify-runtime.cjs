@@ -139,6 +139,28 @@ const iconsCss = iconsStyle?.textContent ?? ''
 const pngUris = (themeCss + iconsCss).match(/data:image\/png;base64,/g) ?? []
 const jpegUris = (themeCss + iconsCss).match(/data:image\/jpeg;base64,/g) ?? []
 
+/**
+ * Alpha of an `rgba(...)` token value, so readability can be asserted instead of
+ * eyeballed. A surface below ~0.85 over the busy artwork is the configuration
+ * that made text unreadable before.
+ */
+function alphaOf(value) {
+  const match = /rgba\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*,\s*([\d.]+)\s*\)/.exec(String(value))
+  return match === null ? 1 : Number(match[1])
+}
+
+const lightTokens = ctx.theme.overrides[0]?.tokens ?? {}
+const SURFACE_TOKENS = [
+  '--dsw-alias-bg-base',
+  '--dsw-alias-bg-layer-1',
+  '--dsw-alias-bg-layer-2',
+  '--dsw-specific-sidebar-fill',
+  '--dsw-specific-input-major',
+  '--dsw-specific-bubble',
+]
+const thinSurfaces = SURFACE_TOKENS.filter((name) => alphaOf(lightTokens[name]?.light) < 0.85)
+const darkThinSurfaces = SURFACE_TOKENS.filter((name) => alphaOf(lightTokens[name]?.dark) < 0.85)
+
 const checks = [
   ['factory id is the package name', loadCall.id === 'dsh-klee-theme'],
   ['module declares inject', Array.isArray(plugin.inject) && plugin.inject.includes('theme')],
@@ -149,7 +171,16 @@ const checks = [
   ['no unresolved placeholder survived in CSS', !themeCss.includes('__BG_') && !iconsCss.includes('__HERO_') && !iconsCss.includes('__SEND_')],
   ['backdrop carries the 16:9 artwork', themeCss.includes('data:image/jpeg;base64,') && jpegUris.length === 2],
   ['narrow-window media query swaps the artwork', themeCss.includes('max-aspect-ratio: 13/10')],
-  ['shell surfaces are made transparent', themeCss.includes('.BynINW_frame') && themeCss.includes('background: transparent')],
+
+  // Readability contract: the reading column keeps a solid surface, the artwork
+  // is softened, and no surface token is thin enough to let the picture through.
+  ['reading column keeps a solid surface', /\.BynINW_centerCol[\s\S]{0,120}background:\s*var\(--dsw-alias-bg-base\)/.test(themeCss)],
+  ['reading column is never cleared', !/\.BynINW_centerCol[^{]*\{[^}]*background:\s*transparent/.test(themeCss)],
+  ['shell frame is still cleared for the artwork', /\.BynINW_frame[^{]*\{[^}]*background:\s*transparent/.test(themeCss)],
+  ['artwork is blurred', /#dsh-klee-theme-backdrop\s*\{[^}]*filter:\s*var\(--dsh-klee-artwork-blur/.test(themeCss)],
+  ['artwork is veiled', /#dsh-klee-theme-backdrop::after\s*\{[^}]*rgba\(255,\s*244,\s*234/.test(themeCss)],
+  ['light surfaces are opaque enough to read on', thinSurfaces.length === 0],
+  ['dark surfaces are opaque enough to read on', darkThinSurfaces.length === 0],
 
   // Hero brand mark: one mark, painted in CSS, host glyph hidden.
   ['hero mark: host svg is hidden', iconsCss.includes('> svg[aria-hidden="true"]') && iconsCss.includes('display: none !important')],

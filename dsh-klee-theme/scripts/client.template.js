@@ -73,32 +73,37 @@ window.__ModuleLoader__.load({
 
     /**
      * The artwork's own palette, averaged off the warm coral washes of
-     * 背景（16;9）.jpg and 背景（4;3）.jpg. Surfaces are deliberately
-     * near-opaque so the backdrop reads through the shell without hurting text
-     * contrast; every value is a plain CSS color string.
+     * 背景（16;9）.jpg and 背景（4;3）.jpg.
+     *
+     * Surface alpha is the readability lever, and it is deliberately high: the
+     * backdrop is a busy illustration, so a translucent surface lets coral
+     * shapes and cream characters sit directly under dark-brown text and the
+     * contrast collapses. Above ~0.88 the artwork still tints the surface while
+     * text keeps a stable ground. The backdrop itself is blurred and veiled
+     * (see THEME_STYLE) so the small alpha that remains never reads as noise.
      */
     const KLEE_TOKENS = {
-      // Surfaces — warm coral, translucent enough to show the artwork.
-      '--dsw-alias-bg-base': 'rgba(240, 169, 123, 0.34)',
-      '--dsw-alias-bg-layer-1': 'rgba(249, 214, 186, 0.88)',
-      '--dsw-alias-bg-layer-2': 'rgba(246, 198, 163, 0.86)',
-      '--dsw-alias-bg-layer-3': 'rgba(252, 226, 202, 0.94)',
-      '--dsw-alias-bg-overlay': 'rgba(253, 238, 224, 0.97)',
-      '--dsw-specific-sidebar-fill': 'rgba(247, 202, 169, 0.76)',
-      '--dsw-specific-menu': 'rgba(253, 240, 228, 0.95)',
-      '--dsw-specific-input-major': 'rgba(253, 242, 231, 0.94)',
-      '--dsw-specific-bubble': 'rgba(255, 208, 176, 0.92)',
-      '--dsw-specific-selector': 'rgba(253, 234, 216, 0.94)',
+      // Surfaces — warm cream, near-opaque so text always has a quiet ground.
+      '--dsw-alias-bg-base': 'rgba(253, 244, 236, 0.90)',
+      '--dsw-alias-bg-layer-1': 'rgba(255, 249, 243, 0.95)',
+      '--dsw-alias-bg-layer-2': 'rgba(250, 232, 216, 0.94)',
+      '--dsw-alias-bg-layer-3': 'rgba(255, 251, 246, 0.96)',
+      '--dsw-alias-bg-overlay': 'rgba(255, 250, 244, 0.97)',
+      '--dsw-specific-sidebar-fill': 'rgba(250, 233, 217, 0.88)',
+      '--dsw-specific-menu': 'rgba(255, 250, 244, 0.97)',
+      '--dsw-specific-input-major': 'rgba(255, 250, 244, 0.96)',
+      '--dsw-specific-bubble': 'rgba(255, 224, 200, 0.96)',
+      '--dsw-specific-selector': 'rgba(255, 246, 237, 0.96)',
 
       // Text and icons — deep warm brown, so the copy stays readable on coral.
       '--dsw-alias-label-primary': '#4a2a20',
-      '--dsw-alias-label-secondary': '#7a4a38',
-      '--dsw-alias-label-tertiary': '#9a6753',
-      '--dsw-alias-label-caption': '#a97862',
+      '--dsw-alias-label-secondary': '#6f4132',
+      '--dsw-alias-label-tertiary': '#8b5b48',
+      '--dsw-alias-label-caption': '#96654f',
       '--dsw-alias-label-primary-dimmed': '#5c3527',
       '--dsw-alias-label-primary-inverted': '#fff7f1',
-      '--dsw-alias-label-quaternary': '#c19a86',
-      '--dsw-alias-label-dimmed': '#b08a76',
+      '--dsw-alias-label-quaternary': '#a97f6a',
+      '--dsw-alias-label-dimmed': '#9d7763',
 
       // Borders.
       '--dsw-alias-border-l1': 'rgba(122, 63, 41, 0.20)',
@@ -129,12 +134,12 @@ window.__ModuleLoader__.load({
       '--dsw-alias-onboarding-accent': '#d4452f',
 
       // Code and scrollbars.
-      '--dsw-alias-markdown-code-block': 'rgba(255, 231, 213, 0.86)',
+      '--dsw-alias-markdown-code-block': 'rgba(255, 240, 226, 0.94)',
       '--dsw-alias-scrollbar-bg-l2': 'rgba(122, 63, 41, 0.22)',
       '--dsw-alias-scrollbar-hover-l2': 'rgba(122, 63, 41, 0.36)',
       '--dsw-alias-menu-icon': '#8a5540',
-      '--dsw-alias-menu-group-header-fill': 'rgba(252, 234, 219, 0.94)',
-      '--dsw-menu-surface-fill': 'rgba(253, 240, 228, 0.95)',
+      '--dsw-alias-menu-group-header-fill': 'rgba(253, 241, 231, 0.97)',
+      '--dsw-menu-surface-fill': 'rgba(255, 250, 244, 0.97)',
 
       // Elevation reads as a warm shadow rather than neutral grey.
       '--dsw-elevation-stroke-color': 'rgba(122, 63, 41, 0.22)',
@@ -143,19 +148,20 @@ window.__ModuleLoader__.load({
     /**
      * The dark counterpart: the same warm keys, pushed down into a warm brown so
      * a user whose shell is in dark mode still gets a coherent Klee palette
-     * instead of a washed-out light one.
+     * instead of a washed-out light one. Same alpha rule as the light set —
+     * near-opaque surfaces, because the backdrop is busy.
      */
     const KLEE_TOKENS_DARK = {
-      '--dsw-alias-bg-base': 'rgba(30, 19, 16, 0.52)',
-      '--dsw-alias-bg-layer-1': 'rgba(44, 27, 22, 0.86)',
-      '--dsw-alias-bg-layer-2': 'rgba(56, 34, 27, 0.84)',
-      '--dsw-alias-bg-layer-3': 'rgba(66, 40, 32, 0.92)',
-      '--dsw-alias-bg-overlay': 'rgba(38, 23, 19, 0.96)',
-      '--dsw-specific-sidebar-fill': 'rgba(41, 25, 21, 0.76)',
-      '--dsw-specific-menu': 'rgba(44, 27, 22, 0.95)',
-      '--dsw-specific-input-major': 'rgba(50, 30, 25, 0.94)',
-      '--dsw-specific-bubble': 'rgba(120, 57, 40, 0.92)',
-      '--dsw-specific-selector': 'rgba(52, 32, 26, 0.94)',
+      '--dsw-alias-bg-base': 'rgba(30, 19, 16, 0.90)',
+      '--dsw-alias-bg-layer-1': 'rgba(44, 27, 22, 0.94)',
+      '--dsw-alias-bg-layer-2': 'rgba(56, 34, 27, 0.94)',
+      '--dsw-alias-bg-layer-3': 'rgba(66, 40, 32, 0.96)',
+      '--dsw-alias-bg-overlay': 'rgba(38, 23, 19, 0.97)',
+      '--dsw-specific-sidebar-fill': 'rgba(38, 23, 19, 0.90)',
+      '--dsw-specific-menu': 'rgba(44, 27, 22, 0.97)',
+      '--dsw-specific-input-major': 'rgba(50, 30, 25, 0.96)',
+      '--dsw-specific-bubble': 'rgba(120, 57, 40, 0.95)',
+      '--dsw-specific-selector': 'rgba(52, 32, 26, 0.96)',
 
       '--dsw-alias-label-primary': '#f6e3d8',
       '--dsw-alias-label-secondary': '#dcbfb0',
@@ -190,7 +196,7 @@ window.__ModuleLoader__.load({
       '--dsw-alias-state-idle-primary': '#bb9787',
       '--dsw-alias-onboarding-accent': '#ff8a5c',
 
-      '--dsw-alias-markdown-code-block': 'rgba(32, 20, 16, 0.72)',
+      '--dsw-alias-markdown-code-block': 'rgba(32, 20, 16, 0.88)',
       '--dsw-alias-scrollbar-bg-l2': 'rgba(255, 214, 191, 0.24)',
       '--dsw-alias-scrollbar-hover-l2': 'rgba(255, 214, 191, 0.38)',
       '--dsw-alias-menu-icon': '#c9a595',
@@ -274,25 +280,36 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * Shell transparency plus the aspect-aware backdrop.
+     * Backdrop layer and the shell's transparent window.
      *
-     * The shell paints its own opaque surfaces (`--dsw-alias-bg-base` on the
-     * frame, `--dsw-specific-sidebar-fill` on the sidebar column) and the
-     * palette is deliberately translucent, so the app's own background is
-     * switched off and the backdrop layer shows through. Panels keep their
-     * translucent fills, which is what makes the artwork readable behind live
-     * content. `--dsh-klee-backdrop-strength` is the single knob: set it to 0 on
-     * <body> to keep the palette and drop the artwork.
+     * Layering, outermost first: the artwork layer sits behind everything; the
+     * frame is cleared so the artwork shows at the frame edges and behind the
+     * sidebar; the reading column keeps a solid surface. That last point is the
+     * whole readability contract — **text never sits directly on the artwork**.
+     * An earlier revision cleared the column too, which is why body text became
+     * hard to read no matter how the palette was tuned.
+     *
+     * The artwork is blurred, slightly enlarged and veiled for the surfaces that
+     * are still translucent (the sidebar): busy outlines stop competing with
+     * small text, and the scale hides the soft edge blur leaves at the viewport
+     * border. `--dsh-klee-backdrop-strength` (0–1) fades the layer;
+     * `--dsh-klee-artwork-blur` overrides the blur (0 = sharp artwork).
      */
     const THEME_STYLE = `
 :root,
 body {
   --dsh-klee-backdrop-strength: 1;
+  --dsh-klee-artwork-blur: blur(3px) saturate(0.94);
 }
-html[data-windows-titlebar] .BynINW_frame,
-.BynINW_frame,
+/* The reading column is opaque: this is what keeps copy legible. */
 .BynINW_centerCol,
 [data-windows-titlebar] .BynINW_centerCol {
+  background: var(--dsw-alias-bg-base);
+}
+/* The frame stays clear so the artwork shows through the sidebar's own
+   translucent fill and at the frame edges. */
+html[data-windows-titlebar] .BynINW_frame,
+.BynINW_frame {
   background: transparent;
 }
 #${BACKDROP_ID} {
@@ -305,6 +322,8 @@ html[data-windows-titlebar] .BynINW_frame,
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  filter: var(--dsh-klee-artwork-blur, blur(3px) saturate(0.94));
+  transform: scale(1.03);
   transition: opacity 200ms ease;
 }
 /* Narrower than 13:10 switches to the 4:3 artwork, so the character is not
@@ -314,15 +333,15 @@ html[data-windows-titlebar] .BynINW_frame,
     background-image: url("${ASSETS.bgPortrait}");
   }
 }
-/* A warm veil: lifts text contrast over the busiest parts of the artwork
-   without flattening it. */
+/* The warm veil: flattens the artwork's hottest highlights so the surfaces that
+   are still translucent keep dark text readable. */
 #${BACKDROP_ID}::after {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(120% 90% at 50% 0%, rgba(255, 236, 220, 0.30) 0%, rgba(255, 236, 220, 0) 62%),
-    linear-gradient(180deg, rgba(255, 238, 224, 0.16) 0%, rgba(255, 238, 224, 0.34) 100%);
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 244, 234, 0.46) 0%, rgba(255, 244, 234, 0.12) 62%),
+    linear-gradient(180deg, rgba(255, 246, 238, 0.30) 0%, rgba(255, 246, 238, 0.58) 100%);
 }
 @media (prefers-reduced-motion: reduce) {
   #${BACKDROP_ID} { transition: none; }
