@@ -95,10 +95,14 @@ window.__ModuleLoader__.load({
     const KLEE_TOKENS = {
       // The two big panes: translucent so the artwork reads as a background.
       // The host may stack two of these (frame + column), which multiplies to
-      // ~0.73 — still ~27% of the picture visible in the reading area, and 54%
-      // wherever only one layer paints.
-      '--dsw-alias-bg-base': 'rgba(253, 244, 236, 0.48)',
-      '--dsw-specific-sidebar-fill': 'rgba(250, 233, 217, 0.46)',
+      // ~0.73 with the defaults — so ~27% of the picture survives in the reading
+      // area, and 52% wherever only one layer paints.
+      //
+      // The alpha is a live knob (`--dsh-klee-pane-alpha`) rather than a frozen
+      // literal: "how much background is enough" is a taste call, and dialling it
+      // should not need a rebuild. Lower = more artwork, higher = more contrast.
+      '--dsw-alias-bg-base': 'rgba(253, 244, 236, var(--dsh-klee-pane-alpha, 0.48))',
+      '--dsw-specific-sidebar-fill': 'rgba(250, 233, 217, var(--dsh-klee-sidebar-alpha, 0.46))',
       // Everything that carries small text or sits above content stays solid.
       '--dsw-alias-bg-layer-1': 'rgba(255, 249, 243, 0.94)',
       '--dsw-alias-bg-layer-2': 'rgba(250, 232, 216, 0.93)',
@@ -172,8 +176,8 @@ window.__ModuleLoader__.load({
      * text still clears AA over it.
      */
     const KLEE_TOKENS_DARK = {
-      '--dsw-alias-bg-base': 'rgba(30, 19, 16, 0.66)',
-      '--dsw-specific-sidebar-fill': 'rgba(38, 23, 19, 0.62)',
+      '--dsw-alias-bg-base': 'rgba(30, 19, 16, var(--dsh-klee-pane-alpha-dark, 0.66))',
+      '--dsw-specific-sidebar-fill': 'rgba(38, 23, 19, var(--dsh-klee-sidebar-alpha-dark, 0.62))',
       '--dsw-alias-bg-layer-1': 'rgba(44, 27, 22, 0.92)',
       '--dsw-alias-bg-layer-2': 'rgba(56, 34, 27, 0.92)',
       '--dsw-alias-bg-layer-3': 'rgba(66, 40, 32, 0.94)',
@@ -300,28 +304,50 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * Backdrop layer only — deliberately no host layout classes.
+     * Backdrop layer and the one structural rule this theme does keep.
      *
-     * An earlier revision cleared the shell frame and frosted the reading
-     * column by class name. Those classes are CSS-module hashes that change with
-     * every DSH build (`BynINW_*` in one, `mP3x-q_*` in the next), so the rules
+     * An earlier revision cleared the shell frame and frosted the reading column
+     * by class name. Those classes are CSS-module hashes that change with every
+     * DSH build (`BynINW_*` in one, `mP3x-q_*` in the next), so the rules
      * silently stopped matching and the theme's own layering disappeared with
-     * them. The artwork now rides entirely on the palette's alpha: the host
-     * paints `--dsw-alias-bg-base` (55%) and `--dsw-specific-sidebar-fill` (52%)
-     * over this layer, so roughly 45% of the picture shows through everywhere,
+     * them. The picture now rides on the palette's alpha instead — the host
+     * paints `--dsw-alias-bg-base` over this layer, so the artwork shows through
      * with no reliance on any generated class name.
      *
-     * The picture is softened (`blur(6px)`) and slightly enlarged so its texture
-     * never competes with glyphs and no blurred edge shows at the viewport rim.
-     * `--dsh-klee-artwork-blur` tunes that (e.g. `none` for a crisp picture at
-     * the cost of some legibility), and `--dsh-klee-backdrop-strength` (0–1)
-     * fades the layer itself.
+     * Two consequences, both handled here:
+     *
+     *  - **Dialogs must not be translucent.** Any modal that paints
+     *    `var(--dsw-alias-bg-base)` inherits the glass and its text lands on
+     *    live content underneath — unreadable. `role="dialog"` /
+     *    `role="alertdialog"` are semantic, not build hashes, so this is a safe
+     *    structural hook, and it covers third-party plugin windows too.
+     *  - **The picture has to stay recognisable.** A heavy blur turns it into a
+     *    beige wash; 1px keeps edges soft without hiding what the artwork is.
+     *
+     * Knobs: `--dsh-klee-artwork-blur`, `--dsh-klee-backdrop-strength` (0–1),
+     * `--dsh-klee-pane-alpha*`, and `--dsh-klee-dialog-fill`.
      */
     const THEME_STYLE = `
 :root,
 body {
   --dsh-klee-backdrop-strength: 1;
-  --dsh-klee-artwork-blur: blur(6px) saturate(1.15) contrast(1.04);
+  --dsh-klee-artwork-blur: blur(1px) saturate(1.12) contrast(1.03);
+  /* Pane opacity. Lower = more artwork visible, higher = more contrast.
+     Defaults are the values the contrast assertions are computed against. */
+  --dsh-klee-pane-alpha: 0.48;
+  --dsh-klee-sidebar-alpha: 0.46;
+  --dsh-klee-pane-alpha-dark: 0.66;
+  --dsh-klee-sidebar-alpha-dark: 0.62;
+  /* Modal surfaces are opaque by contract (see the rule below). */
+  --dsh-klee-dialog-fill: rgba(253, 246, 239, 0.985);
+}
+body[data-ds-dark-theme] {
+  --dsh-klee-dialog-fill: rgba(34, 22, 18, 0.985);
+}
+/* A modal is never see-through: its text sits above whatever it covers. */
+[role="dialog"][aria-modal="true"],
+[role="alertdialog"][aria-modal="true"] {
+  background-color: var(--dsh-klee-dialog-fill, rgba(253, 246, 239, 0.985)) !important;
 }
 #${BACKDROP_ID} {
   position: fixed;
@@ -333,8 +359,8 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  filter: var(--dsh-klee-artwork-blur, blur(6px) saturate(1.15) contrast(1.04));
-  transform: scale(1.04);
+  filter: var(--dsh-klee-artwork-blur, blur(1px) saturate(1.12) contrast(1.03));
+  transform: scale(1.01);
   transition: opacity 200ms ease;
 }
 /* Narrower than 13:10 switches to the 4:3 artwork, so the character is not

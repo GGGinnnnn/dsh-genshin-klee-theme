@@ -7,8 +7,9 @@ a replaced hero brand mark, and a palette sampled from the artwork itself.
 
 | Surface | Implementation |
 | --- | --- |
-| Background | A fixed `#dsh-klee-theme-backdrop` layer behind the shell. The 16:9 artwork by default, the 4:3 one under `@media (max-aspect-ratio: 13/10)`, both `background-size: cover`, softened with `blur(6px)` and a light warm veil. |
+| Background | A fixed `#dsh-klee-theme-backdrop` layer behind the shell. The 16:9 artwork by default, the 4:3 one under `@media (max-aspect-ratio: 13/10)`, both `background-size: cover`, softened with just `blur(1px)` and a light warm veil. |
 | Visibility | No host layout classes are touched. The picture rides on the palette's own alpha: the host paints `--dsw-alias-bg-base` (0.48) and `--dsw-specific-sidebar-fill` (0.46) over the layer, so 52% of the artwork shows through a single pane and ~27% where the host stacks two. |
+| Modals | `[role="dialog"][aria-modal="true"]` is forced opaque (`--dsh-klee-dialog-fill`, 98.5%). Plugin dialogs commonly paint `var(--dsw-alias-bg-base)`, so without this a translucent modal would sit over live content and its text would be unreadable. |
 | Hero brand mark | The headline glyph — an inline `<svg aria-hidden="true">` inside an inline-flex `<span>` — is hidden and the artwork painted on that span. |
 | Composer send button | The round primary button whose `aria-label` is the send action: its arrow svg is hidden and the artwork painted inside the button. |
 | Palette | `ctx.theme.overrideTokens()` stacks a light **and** dark alias-token layer over the active theme; `ctx.theme.register()` additionally makes `dsh-klee-theme` a selectable Appearance theme. |
@@ -37,8 +38,10 @@ Asserted by `scripts/verify-runtime.cjs`:
    the worst-case artwork pixel behind the pane and must clear ≥ 4.5:1 (WCAG AA)
    in both schemes.
 
-Knobs: `--dsh-klee-backdrop-strength` (0–1) and `--dsh-klee-artwork-blur`
-(`blur(6px) saturate(1.15) contrast(1.04)` by default, `none` for a crisp picture).
+Knobs: `--dsh-klee-backdrop-strength` (0–1), `--dsh-klee-artwork-blur`
+(`blur(1px) saturate(1.12) contrast(1.03)` by default), `--dsh-klee-pane-alpha` /
+`--dsh-klee-sidebar-alpha` (0.48 / 0.46) and their `-dark` twins (0.66 / 0.62),
+plus `--dsh-klee-dialog-fill` for the modal surface.
 
 ## Why both icon swaps are pure CSS
 

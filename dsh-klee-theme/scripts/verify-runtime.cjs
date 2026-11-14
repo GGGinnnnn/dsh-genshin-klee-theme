@@ -143,10 +143,17 @@ const jpegUris = (themeCss + iconsCss).match(/data:image\/jpeg;base64,/g) ?? []
  * Alpha of an `rgba(...)` token value, so readability can be asserted instead of
  * eyeballed. A surface below ~0.85 over the busy artwork is the configuration
  * that made text unreadable before.
+ *
+ * The pane tokens carry their alpha as `var(--dsh-klee-pane-alpha, 0.48)` so the
+ * knob works at runtime; the assertion therefore resolves the fallback, which is
+ * the value the contrast numbers are computed against.
  */
 function alphaOf(value) {
-  const match = /rgba\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*,\s*([\d.]+)\s*\)/.exec(String(value))
-  return match === null ? 1 : Number(match[1])
+  const text = String(value)
+  const literal = /rgba\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*,\s*([\d.]+)\s*\)/.exec(text)
+  if (literal !== null) return Number(literal[1])
+  const knob = /rgba\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*,\s*var\([^,]+,\s*([\d.]+)\s*\)\s*\)/.exec(text)
+  return knob === null ? 1 : Number(knob[1])
 }
 
 const lightTokens = ctx.theme.overrides[0]?.tokens ?? {}
@@ -235,6 +242,10 @@ const checks = [
   // clears AA against the composed glass.
   ['no dependency on host layout class hashes', !/(BynINW_|_centerCol|_sidebarCol|_frame\b)/.test(themeCss)],
   ['artwork layer is wired to the blur knob', /#dsh-klee-theme-backdrop\s*\{[^}]*filter:\s*var\(--dsh-klee-artwork-blur/.test(themeCss)],
+  ['artwork blur stays light enough to recognise the picture', /--dsh-klee-artwork-blur:\s*blur\(1px\)/.test(themeCss)],
+  ['modals are forced opaque', /\[role="dialog"\]\[aria-modal="true"\][\s\S]{0,200}background-color:\s*var\(--dsh-klee-dialog-fill/.test(themeCss)],
+  ['alertdialogs are forced opaque', /\[role="alertdialog"\]\[aria-modal="true"\]/.test(themeCss)],
+  ['dark scheme gets its own dialog fill', /body\[data-ds-dark-theme\][\s\S]{0,120}--dsh-klee-dialog-fill/.test(themeCss)],
   ['artwork keeps only a light veil', /#dsh-klee-theme-backdrop::after\s*\{[^}]*rgba\(255,\s*246,\s*238/.test(themeCss)],
   ['light pane alpha keeps the artwork visible', lightPaneAlpha > 0 && lightPaneAlpha <= 0.55],
   ['light sidebar alpha keeps the artwork visible', lightSidebarAlpha > 0 && lightSidebarAlpha <= 0.55],

@@ -48,17 +48,21 @@
 
 | 层 | 处理 |
 | --- | --- |
-| 背景图层 | 垫底，`blur(6px) saturate(1.15) contrast(1.04)` + `scale(1.04)` + 很淡的暖色薄纱 |
+| 背景图层 | 垫底，`blur(1px) saturate(1.12) contrast(1.03)` + `scale(1.01)` + 很淡的暖色薄纱（模糊只用来软化边缘，不能把画糊掉） |
 | 面板底色 | `--dsw-alias-bg-base` = 48%（侧边栏 46%），宿主自己刷在面板上；单层时背景透出 52%，外框+内容列叠两层时透出约 27% |
 | 卡片、菜单、弹层、输入框 | 0.85+ 不透明，小字与弹窗内容始终有稳定底 |
+| **模态窗口** | `[role="dialog"][aria-modal="true"]` 强制不透明（`--dsh-klee-dialog-fill`，98.5%），因为很多插件对话框直接拿 `--dsw-alias-bg-base` 当底色——半透明会把它叠在正文上，字就看不清了 |
 
 这样做的好处：**只要宿主还用这套 `--dsw-alias-*` token，主题就不会因为 DSH 改类名而失效**。
-背景图的柔化放在图层上（而不是面板的 `backdrop-filter`），同样不依赖宿主结构。
+`role="dialog"` 是语义属性而不是构建哈希，所以那条模态规则对第三方插件的窗口同样成立。
 
 可调项：
 
 - `--dsh-klee-backdrop-strength`：0 = 完全不要背景图，1 = 默认
-- `--dsh-klee-artwork-blur`：默认 `blur(6px) saturate(1.15) contrast(1.04)`；设 `none` 是清晰原图（文字对比会略降）
+- `--dsh-klee-artwork-blur`：默认 `blur(1px) saturate(1.12) contrast(1.03)`；`none` = 完全清晰
+- `--dsh-klee-pane-alpha` / `--dsh-klee-sidebar-alpha`：面板不透明度（默认 0.48 / 0.46），调低背景更明显、调高字更清楚
+- `--dsh-klee-pane-alpha-dark` / `--dsh-klee-sidebar-alpha-dark`：深色模式的同一对值（0.66 / 0.62）
+- `--dsh-klee-dialog-fill`：模态窗口底色（默认 98.5% 不透明）
 
 对比度（「文字色 vs 面板色叠在最不利背景像素上」，WCAG）：
 
