@@ -8,7 +8,7 @@ a replaced hero brand mark, and a palette sampled from the artwork itself.
 | Surface | Implementation |
 | --- | --- |
 | Background | A fixed `#dsh-klee-theme-backdrop` layer behind the shell. The 16:9 artwork by default, the 4:3 one under `@media (max-aspect-ratio: 13/10)`, both `background-size: cover`, **no blur**, only a light warm veil. |
-| Visibility | No host layout classes are touched. The picture rides on the palette's own alpha: the host paints `--dsw-alias-bg-base` (0.48) and `--dsw-specific-sidebar-fill` (0.46) over the layer, so 52% of the artwork shows through a single pane and ~27% where the host stacks two. |
+| Visibility | No host layout classes are touched. The picture rides on the palette's own alpha, and the panes keep **v1.0's coral wash**: `--dsw-alias-bg-base` = `rgba(240,169,123, 0.34)`, sidebar `rgba(247,202,169, 0.76)`. The host paints them, so the look is "coral veil + crisp picture" rather than a light cream sheet. |
 | Windows | `[role="dialog"]`, `[role="alertdialog"]` and `[aria-modal="true"]` are forced opaque (`--dsh-klee-dialog-fill`, 98.5%). Plugin windows commonly paint `var(--dsw-alias-bg-base)`; **`aria-modal` is deliberately not required** — `dsh-peerweave` ships a dialog without it. |
 | Hero brand mark | The headline glyph — an inline `<svg aria-hidden="true">` inside an inline-flex `<span>` — is hidden and the artwork painted on that span. |
 | Composer send button | The round primary button whose `aria-label` is the send action: its arrow svg is hidden and the artwork painted inside the button. |
@@ -16,35 +16,38 @@ a replaced hero brand mark, and a palette sampled from the artwork itself.
 
 ## Visibility × readability contract
 
-Three failed revisions shaped this design, and the third is the interesting one:
+Four revisions shaped this design, and they are all about the same tension:
 
 1. clearing the reading column put text straight on the artwork (unreadable);
 2. raising surface alpha to 0.90 made the artwork disappear;
 3. clearing the frame and frosting panes by class name worked — until DSH renamed
    its CSS-module hashes (`BynINW_*` → `mP3x-q_*`), and every rule silently stopped
-   matching.
+   matching;
+4. re-tinting the panes cream "for readability" drifted away from the original coral
+   look entirely.
 
-So the theme now touches **no host layout class at all**. Visibility comes from
-the palette's alpha (panes 0.48/0.46 light, 0.66/0.62 dark), the artwork stays
-sharp, and readability is verified numerically. Asserted by
+So the theme touches **no host layout class at all**, keeps **v1.0's coral palette**,
+keeps the artwork sharp, and verifies the trade-off numerically. Asserted by
 `scripts/verify-runtime.cjs`:
 
 1. **No generated class names** — the stylesheet is checked for `BynINW_`,
    `_centerCol`, `_sidebarCol`, so a host rename can never silently gut the theme.
-2. **Panels stay see-through** — light pane alpha must stay ≤ 0.55, dark ≤ 0.70.
+2. **Panels stay thin** — light pane alpha must stay ≤ 0.55, dark ≤ 0.70, so the
+   picture can never be painted out again.
 3. **Solid where it matters** — cards, menus, popovers, composer and bubbles stay
    ≥ 0.85, and every window surface (`role="dialog"` / `role="alertdialog"` /
-   `[aria-modal]`) is forced opaque, so small text never depends on the artwork.
-4. **Contrast is computed, not eyeballed** — each text tier is composited over
-   the worst-case artwork pixel behind the pane and must clear ≥ 4.5:1 (WCAG AA)
-   in both schemes.
+   `[aria-modal]`) is forced opaque.
+4. **Contrast is two-tier and computed** — ≥ 4.5:1 (AA) over the picture's typical
+   tone, ≥ 3:1 over its worst pixel, in both schemes. A 0.34 coral veil cannot do
+   better on the darkest pixels without stopping being a veil; raising
+   `--dsh-klee-pane-alpha` buys full AA at the cost of background punch.
 5. **The picture is not blurred** — the default artwork filter must be `none`, so
    "the background disappeared" cannot come back as a blur.
 
 Knobs: `--dsh-klee-backdrop-strength` (0–1), `--dsh-klee-artwork-blur`
 (`none` by default), `--dsh-klee-pane-alpha` /
-`--dsh-klee-sidebar-alpha` (0.48 / 0.46) and their `-dark` twins (0.66 / 0.62),
-plus `--dsh-klee-dialog-fill` for the modal surface.
+`--dsh-klee-sidebar-alpha` (**0.34 / 0.76**, v1.0's values) and their `-dark`
+twins (0.52 / 0.76), plus `--dsh-klee-dialog-fill` for the window surface.
 
 ## Why both icon swaps are pure CSS
 

@@ -93,37 +93,36 @@ window.__ModuleLoader__.load({
      * scripts/verify-runtime.cjs.
      */
     const KLEE_TOKENS = {
-      // The two big panes: translucent so the artwork reads as a background.
-      // The host may stack two of these (frame + column), which multiplies to
-      // ~0.73 with the defaults — so ~27% of the picture survives in the reading
-      // area, and 52% wherever only one layer paints.
+      // The two big panes: the v1.0 look — translucent *coral*, not cream, so the
+      // artwork reads through a warm wash instead of a beige one. Alphas are live
+      // knobs (see :root) so "how much background" never needs a rebuild.
       //
-      // The alpha is a live knob (`--dsh-klee-pane-alpha`) rather than a frozen
-      // literal: "how much background is enough" is a taste call, and dialling it
-      // should not need a rebuild. Lower = more artwork, higher = more contrast.
-      '--dsw-alias-bg-base': 'rgba(253, 244, 236, var(--dsh-klee-pane-alpha, 0.48))',
-      '--dsw-specific-sidebar-fill': 'rgba(250, 233, 217, var(--dsh-klee-sidebar-alpha, 0.46))',
-      // Everything that carries small text or sits above content stays solid.
-      '--dsw-alias-bg-layer-1': 'rgba(255, 249, 243, 0.97)',
-      '--dsw-alias-bg-layer-2': 'rgba(250, 232, 216, 0.96)',
-      '--dsw-alias-bg-layer-3': 'rgba(255, 251, 246, 0.97)',
-      '--dsw-alias-bg-overlay': 'rgba(255, 250, 244, 0.98)',
-      '--dsw-specific-menu': 'rgba(255, 250, 244, 0.96)',
-      '--dsw-specific-input-major': 'rgba(255, 250, 244, 0.96)',
-      '--dsw-specific-bubble': 'rgba(255, 224, 200, 0.95)',
-      '--dsw-specific-selector': 'rgba(255, 246, 237, 0.95)',
+      // v1.0 defaults: 0.34 / 0.76. They were raised while chasing readability,
+      // which is exactly what made the picture disappear; the darker text tiers
+      // below carry legibility instead.
+      '--dsw-alias-bg-base': 'rgba(240, 169, 123, var(--dsh-klee-pane-alpha, 0.34))',
+      '--dsw-specific-sidebar-fill': 'rgba(247, 202, 169, var(--dsh-klee-sidebar-alpha, 0.76))',
+      // Surfaces that carry small text stay near-solid.
+      '--dsw-alias-bg-layer-1': 'rgba(249, 214, 186, 0.88)',
+      '--dsw-alias-bg-layer-2': 'rgba(246, 198, 163, 0.86)',
+      '--dsw-alias-bg-layer-3': 'rgba(252, 226, 202, 0.94)',
+      '--dsw-alias-bg-overlay': 'rgba(253, 238, 224, 0.97)',
+      '--dsw-specific-menu': 'rgba(253, 240, 228, 0.95)',
+      '--dsw-specific-input-major': 'rgba(253, 242, 231, 0.94)',
+      '--dsw-specific-bubble': 'rgba(255, 208, 176, 0.92)',
+      '--dsw-specific-selector': 'rgba(253, 234, 216, 0.94)',
 
-      // Text and icons — deep warm brown. The muted tiers are darker than a
-      // plain cream theme needs, because they must clear WCAG AA against panes
-      // that still carry the artwork.
-      '--dsw-alias-label-primary': '#241309',
-      '--dsw-alias-label-secondary': '#3a1d12',
-      '--dsw-alias-label-tertiary': '#442417',
-      '--dsw-alias-label-caption': '#442417',
-      '--dsw-alias-label-primary-dimmed': '#33200f',
+      // Text and icons — deep warm brown, far darker than v1.0's #4a2a20,
+      // because the pane is now a thin coral wash over a busy picture. These are
+      // the darkest values that keep the coral wash thin *and* the text legible.
+      '--dsw-alias-label-primary': '#140a05',
+      '--dsw-alias-label-secondary': '#24120a',
+      '--dsw-alias-label-tertiary': '#301810',
+      '--dsw-alias-label-caption': '#301810',
+      '--dsw-alias-label-primary-dimmed': '#1c0f07',
       '--dsw-alias-label-primary-inverted': '#fff7f1',
-      '--dsw-alias-label-quaternary': '#8a6453',
-      '--dsw-alias-label-dimmed': '#7d5a49',
+      '--dsw-alias-label-quaternary': '#8a5340',
+      '--dsw-alias-label-dimmed': '#7a4a37',
 
       // Borders.
       '--dsw-alias-border-l1': 'rgba(122, 63, 41, 0.20)',
@@ -176,21 +175,22 @@ window.__ModuleLoader__.load({
      * text still clears AA over it.
      */
     const KLEE_TOKENS_DARK = {
-      '--dsw-alias-bg-base': 'rgba(30, 19, 16, var(--dsh-klee-pane-alpha-dark, 0.66))',
-      '--dsw-specific-sidebar-fill': 'rgba(38, 23, 19, var(--dsh-klee-sidebar-alpha-dark, 0.62))',
-      '--dsw-alias-bg-layer-1': 'rgba(44, 27, 22, 0.95)',
-      '--dsw-alias-bg-layer-2': 'rgba(56, 34, 27, 0.95)',
-      '--dsw-alias-bg-layer-3': 'rgba(66, 40, 32, 0.96)',
-      '--dsw-alias-bg-overlay': 'rgba(38, 23, 19, 0.97)',
-      '--dsw-specific-menu': 'rgba(44, 27, 22, 0.96)',
-      '--dsw-specific-input-major': 'rgba(50, 30, 25, 0.95)',
-      '--dsw-specific-bubble': 'rgba(120, 57, 40, 0.94)',
-      '--dsw-specific-selector': 'rgba(52, 32, 26, 0.95)',
+      // v1.0 dark alphas, same reasoning as the light set.
+      '--dsw-alias-bg-base': 'rgba(30, 19, 16, var(--dsh-klee-pane-alpha-dark, 0.52))',
+      '--dsw-specific-sidebar-fill': 'rgba(41, 25, 21, var(--dsh-klee-sidebar-alpha-dark, 0.76))',
+      '--dsw-alias-bg-layer-1': 'rgba(44, 27, 22, 0.86)',
+      '--dsw-alias-bg-layer-2': 'rgba(56, 34, 27, 0.86)',
+      '--dsw-alias-bg-layer-3': 'rgba(66, 40, 32, 0.92)',
+      '--dsw-alias-bg-overlay': 'rgba(38, 23, 19, 0.96)',
+      '--dsw-specific-menu': 'rgba(44, 27, 22, 0.95)',
+      '--dsw-specific-input-major': 'rgba(50, 30, 25, 0.94)',
+      '--dsw-specific-bubble': 'rgba(120, 57, 40, 0.92)',
+      '--dsw-specific-selector': 'rgba(52, 32, 26, 0.94)',
 
-      '--dsw-alias-label-primary': '#fff7f2',
-      '--dsw-alias-label-secondary': '#f9ece4',
-      '--dsw-alias-label-tertiary': '#f2e0d4',
-      '--dsw-alias-label-caption': '#f2e0d4',
+      '--dsw-alias-label-primary': '#fff8f3',
+      '--dsw-alias-label-secondary': '#fff3ea',
+      '--dsw-alias-label-tertiary': '#fdeee3',
+      '--dsw-alias-label-caption': '#fdeee3',
       '--dsw-alias-label-primary-dimmed': '#fdf1ea',
       '--dsw-alias-label-primary-inverted': '#231410',
       '--dsw-alias-label-quaternary': '#8d6e62',
@@ -336,13 +336,13 @@ body {
   --dsh-klee-backdrop-strength: 1;
   --dsh-klee-artwork-blur: none;
   /* Pane opacity. Lower = more artwork visible, higher = more contrast.
-     Defaults are the values the contrast assertions are computed against. */
-  --dsh-klee-pane-alpha: 0.48;
-  --dsh-klee-sidebar-alpha: 0.46;
-  --dsh-klee-pane-alpha-dark: 0.66;
-  --dsh-klee-sidebar-alpha-dark: 0.62;
+     Defaults are v1.0's values and are what the assertions are computed against. */
+  --dsh-klee-pane-alpha: 0.34;
+  --dsh-klee-sidebar-alpha: 0.76;
+  --dsh-klee-pane-alpha-dark: 0.52;
+  --dsh-klee-sidebar-alpha-dark: 0.76;
   /* Window surfaces are opaque by contract (see the rule below). */
-  --dsh-klee-dialog-fill: rgba(253, 246, 239, 0.985);
+  --dsh-klee-dialog-fill: rgba(250, 238, 226, 0.985);
 }
 body[data-ds-dark-theme] {
   --dsh-klee-dialog-fill: rgba(34, 22, 18, 0.985);
