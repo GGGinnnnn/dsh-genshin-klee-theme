@@ -48,21 +48,24 @@
 
 | 层 | 处理 |
 | --- | --- |
-| 背景图层 | 垫底，`blur(1px) saturate(1.12) contrast(1.03)` + `scale(1.01)` + 很淡的暖色薄纱（模糊只用来软化边缘，不能把画糊掉） |
+| 背景图层 | 垫底，**不加模糊**（原图清晰），只留很淡的暖色薄纱——这是最初那版的观感 |
 | 面板底色 | `--dsw-alias-bg-base` = 48%（侧边栏 46%），宿主自己刷在面板上；单层时背景透出 52%，外框+内容列叠两层时透出约 27% |
-| 卡片、菜单、弹层、输入框 | 0.85+ 不透明，小字与弹窗内容始终有稳定底 |
-| **模态窗口** | `[role="dialog"][aria-modal="true"]` 强制不透明（`--dsh-klee-dialog-fill`，98.5%），因为很多插件对话框直接拿 `--dsw-alias-bg-base` 当底色——半透明会把它叠在正文上，字就看不清了 |
+| 卡片、菜单、弹层、输入框 | 0.95+ 不透明，小字与弹窗内容始终有稳定底 |
+| **窗口（对话框）** | `[role="dialog"]` / `[role="alertdialog"]` / `[aria-modal="true"]` 一律强制不透明（`--dsh-klee-dialog-fill`，98.5%），因为很多插件窗口直接拿 `--dsw-alias-bg-base` 当底色——半透明会把它叠在正文上，字就看不清了 |
 
 这样做的好处：**只要宿主还用这套 `--dsw-alias-*` token，主题就不会因为 DSH 改类名而失效**。
-`role="dialog"` 是语义属性而不是构建哈希，所以那条模态规则对第三方插件的窗口同样成立。
+`role="dialog"` 是语义属性而不是构建哈希，所以那条窗口规则对第三方插件同样成立。
+
+> 注意：规则**不要求** `aria-modal`。实测 `ds-harness-remote` 的远程工作台带 `aria-modal`，
+> 而 `dsh-peerweave` 的解锁窗口只有 `role="dialog"` —— 早先要求 `aria-modal` 正是后者仍然透明的原因。
 
 可调项：
 
 - `--dsh-klee-backdrop-strength`：0 = 完全不要背景图，1 = 默认
-- `--dsh-klee-artwork-blur`：默认 `blur(1px) saturate(1.12) contrast(1.03)`；`none` = 完全清晰
+- `--dsh-klee-artwork-blur`：默认 `none`（清晰原图）；想要柔一点可设 `blur(2px)`
 - `--dsh-klee-pane-alpha` / `--dsh-klee-sidebar-alpha`：面板不透明度（默认 0.48 / 0.46），调低背景更明显、调高字更清楚
 - `--dsh-klee-pane-alpha-dark` / `--dsh-klee-sidebar-alpha-dark`：深色模式的同一对值（0.66 / 0.62）
-- `--dsh-klee-dialog-fill`：模态窗口底色（默认 98.5% 不透明）
+- `--dsh-klee-dialog-fill`：窗口底色（默认 98.5% 不透明）
 
 对比度（「文字色 vs 面板色叠在最不利背景像素上」，WCAG）：
 

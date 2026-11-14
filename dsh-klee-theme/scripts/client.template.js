@@ -104,12 +104,12 @@ window.__ModuleLoader__.load({
       '--dsw-alias-bg-base': 'rgba(253, 244, 236, var(--dsh-klee-pane-alpha, 0.48))',
       '--dsw-specific-sidebar-fill': 'rgba(250, 233, 217, var(--dsh-klee-sidebar-alpha, 0.46))',
       // Everything that carries small text or sits above content stays solid.
-      '--dsw-alias-bg-layer-1': 'rgba(255, 249, 243, 0.94)',
-      '--dsw-alias-bg-layer-2': 'rgba(250, 232, 216, 0.93)',
-      '--dsw-alias-bg-layer-3': 'rgba(255, 251, 246, 0.95)',
-      '--dsw-alias-bg-overlay': 'rgba(255, 250, 244, 0.96)',
-      '--dsw-specific-menu': 'rgba(255, 250, 244, 0.92)',
-      '--dsw-specific-input-major': 'rgba(255, 250, 244, 0.92)',
+      '--dsw-alias-bg-layer-1': 'rgba(255, 249, 243, 0.97)',
+      '--dsw-alias-bg-layer-2': 'rgba(250, 232, 216, 0.96)',
+      '--dsw-alias-bg-layer-3': 'rgba(255, 251, 246, 0.97)',
+      '--dsw-alias-bg-overlay': 'rgba(255, 250, 244, 0.98)',
+      '--dsw-specific-menu': 'rgba(255, 250, 244, 0.96)',
+      '--dsw-specific-input-major': 'rgba(255, 250, 244, 0.96)',
       '--dsw-specific-bubble': 'rgba(255, 224, 200, 0.95)',
       '--dsw-specific-selector': 'rgba(255, 246, 237, 0.95)',
 
@@ -178,12 +178,12 @@ window.__ModuleLoader__.load({
     const KLEE_TOKENS_DARK = {
       '--dsw-alias-bg-base': 'rgba(30, 19, 16, var(--dsh-klee-pane-alpha-dark, 0.66))',
       '--dsw-specific-sidebar-fill': 'rgba(38, 23, 19, var(--dsh-klee-sidebar-alpha-dark, 0.62))',
-      '--dsw-alias-bg-layer-1': 'rgba(44, 27, 22, 0.92)',
-      '--dsw-alias-bg-layer-2': 'rgba(56, 34, 27, 0.92)',
-      '--dsw-alias-bg-layer-3': 'rgba(66, 40, 32, 0.94)',
-      '--dsw-alias-bg-overlay': 'rgba(38, 23, 19, 0.96)',
-      '--dsw-specific-menu': 'rgba(44, 27, 22, 0.93)',
-      '--dsw-specific-input-major': 'rgba(50, 30, 25, 0.92)',
+      '--dsw-alias-bg-layer-1': 'rgba(44, 27, 22, 0.95)',
+      '--dsw-alias-bg-layer-2': 'rgba(56, 34, 27, 0.95)',
+      '--dsw-alias-bg-layer-3': 'rgba(66, 40, 32, 0.96)',
+      '--dsw-alias-bg-overlay': 'rgba(38, 23, 19, 0.97)',
+      '--dsw-specific-menu': 'rgba(44, 27, 22, 0.96)',
+      '--dsw-specific-input-major': 'rgba(50, 30, 25, 0.95)',
       '--dsw-specific-bubble': 'rgba(120, 57, 40, 0.94)',
       '--dsw-specific-selector': 'rgba(52, 32, 26, 0.95)',
 
@@ -316,13 +316,16 @@ window.__ModuleLoader__.load({
      *
      * Two consequences, both handled here:
      *
-     *  - **Dialogs must not be translucent.** Any modal that paints
-     *    `var(--dsw-alias-bg-base)` inherits the glass and its text lands on
-     *    live content underneath — unreadable. `role="dialog"` /
-     *    `role="alertdialog"` are semantic, not build hashes, so this is a safe
-     *    structural hook, and it covers third-party plugin windows too.
-     *  - **The picture has to stay recognisable.** A heavy blur turns it into a
-     *    beige wash; 1px keeps edges soft without hiding what the artwork is.
+     *  - **Dialogs must not be translucent.** Any window that paints
+     *    `var(--dsw-alias-bg-base)` inherits the glass and its text lands on live
+     *    content underneath — unreadable. `role="dialog"` / `role="alertdialog"`
+     *    are semantic, not build hashes, so they are a safe structural hook and
+     *    they cover third-party plugin windows too. Note: `aria-modal` is
+     *    deliberately NOT required — plugins ship dialogs without it
+     *    (`ds-harness-remote`, `dsh-peerweave` both do), and requiring it left
+     *    exactly those windows transparent.
+     *  - **The picture stays sharp.** Any blur reads as "the background is gone";
+     *    the pane alpha is what keeps text legible instead.
      *
      * Knobs: `--dsh-klee-artwork-blur`, `--dsh-klee-backdrop-strength` (0–1),
      * `--dsh-klee-pane-alpha*`, and `--dsh-klee-dialog-fill`.
@@ -331,22 +334,24 @@ window.__ModuleLoader__.load({
 :root,
 body {
   --dsh-klee-backdrop-strength: 1;
-  --dsh-klee-artwork-blur: blur(1px) saturate(1.12) contrast(1.03);
+  --dsh-klee-artwork-blur: none;
   /* Pane opacity. Lower = more artwork visible, higher = more contrast.
      Defaults are the values the contrast assertions are computed against. */
   --dsh-klee-pane-alpha: 0.48;
   --dsh-klee-sidebar-alpha: 0.46;
   --dsh-klee-pane-alpha-dark: 0.66;
   --dsh-klee-sidebar-alpha-dark: 0.62;
-  /* Modal surfaces are opaque by contract (see the rule below). */
+  /* Window surfaces are opaque by contract (see the rule below). */
   --dsh-klee-dialog-fill: rgba(253, 246, 239, 0.985);
 }
 body[data-ds-dark-theme] {
   --dsh-klee-dialog-fill: rgba(34, 22, 18, 0.985);
 }
-/* A modal is never see-through: its text sits above whatever it covers. */
-[role="dialog"][aria-modal="true"],
-[role="alertdialog"][aria-modal="true"] {
+/* A window is never see-through: its text sits above whatever it covers.
+   aria-modal is not required on purpose — see the note above. */
+[role="dialog"],
+[role="alertdialog"],
+[aria-modal="true"] {
   background-color: var(--dsh-klee-dialog-fill, rgba(253, 246, 239, 0.985)) !important;
 }
 #${BACKDROP_ID} {
@@ -359,8 +364,7 @@ body[data-ds-dark-theme] {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  filter: var(--dsh-klee-artwork-blur, blur(1px) saturate(1.12) contrast(1.03));
-  transform: scale(1.01);
+  filter: var(--dsh-klee-artwork-blur, none);
   transition: opacity 200ms ease;
 }
 /* Narrower than 13:10 switches to the 4:3 artwork, so the character is not

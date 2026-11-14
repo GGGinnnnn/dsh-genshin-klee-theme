@@ -242,9 +242,9 @@ const checks = [
   // clears AA against the composed glass.
   ['no dependency on host layout class hashes', !/(BynINW_|_centerCol|_sidebarCol|_frame\b)/.test(themeCss)],
   ['artwork layer is wired to the blur knob', /#dsh-klee-theme-backdrop\s*\{[^}]*filter:\s*var\(--dsh-klee-artwork-blur/.test(themeCss)],
-  ['artwork blur stays light enough to recognise the picture', /--dsh-klee-artwork-blur:\s*blur\(1px\)/.test(themeCss)],
-  ['modals are forced opaque', /\[role="dialog"\]\[aria-modal="true"\][\s\S]{0,200}background-color:\s*var\(--dsh-klee-dialog-fill/.test(themeCss)],
-  ['alertdialogs are forced opaque', /\[role="alertdialog"\]\[aria-modal="true"\]/.test(themeCss)],
+  ['artwork is sharp by default (no blur)', /--dsh-klee-artwork-blur:\s*none/.test(themeCss)],
+  ['windows are forced opaque without needing aria-modal', /\[role="dialog"\],[\s\S]{0,200}background-color:\s*var\(--dsh-klee-dialog-fill/.test(themeCss)],
+  ['alertdialogs are covered too', /\[role="alertdialog"\]/.test(themeCss)],
   ['dark scheme gets its own dialog fill', /body\[data-ds-dark-theme\][\s\S]{0,120}--dsh-klee-dialog-fill/.test(themeCss)],
   ['artwork keeps only a light veil', /#dsh-klee-theme-backdrop::after\s*\{[^}]*rgba\(255,\s*246,\s*238/.test(themeCss)],
   ['light pane alpha keeps the artwork visible', lightPaneAlpha > 0 && lightPaneAlpha <= 0.55],
